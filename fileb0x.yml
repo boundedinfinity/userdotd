@@ -1,0 +1,13 @@
+---
+pkg: system
+dest: "system/"
+fmt: true
+updater:
+    enabled: false
+compression:
+    compress: true
+    keep: false
+output: "ab0x.go"
+custom:
+    - files: 
+        - "content/"
