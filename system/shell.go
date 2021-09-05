@@ -24,6 +24,10 @@ func (t *System) ShellInitialize(request model.ShellInitializeRequest) (model.Sh
 	}
 
 	err = embedded.WalkShell(request.Name, func(ep string, d fs.DirEntry, err error) error {
+		if d.Name() == model.StupidGoEmbed_KeepFile {
+			return nil
+		}
+
 		rp := ep
 		rp = embedded.TrimPathPrefix(rp, "shell", request.Name)
 		rp = path.Join(home, rp)
