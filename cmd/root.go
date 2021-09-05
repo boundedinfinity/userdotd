@@ -7,7 +7,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/boundedinfinity/userdotd/config"
 	"github.com/spf13/cobra"
 )
 
@@ -18,7 +17,7 @@ var gLogger *log.Logger
 
 var RootCmd = &cobra.Command{
 	Use:   "userdotd",
-	Short: "userdotd utility",
+	Short: "userdotd shell .d management utility",
 	Long:  "userdotd utility",
 }
 
@@ -26,6 +25,10 @@ func Execute() {
 	if err := RootCmd.Execute(); err != nil {
 		gLogger.Fatalf(err.Error())
 	}
+}
+
+func handleError(err error) {
+	log.Fatal(err.Error())
 }
 
 func init() {
@@ -40,13 +43,8 @@ func init() {
 		cancelFunc()
 	}()
 
-	cobra.OnInitialize(config.InitConfigEnvironment)
+	cobra.OnInitialize(InitConfigEnvironment)
 
-	config.ConfigureDebug(RootCmd.PersistentFlags())
-	config.ConfigureUserDir(RootCmd.PersistentFlags())
-	config.ConfigureuserdotdDir(RootCmd.PersistentFlags())
-	config.ConfigureFishDir(RootCmd.PersistentFlags())
-	config.ConfigureBashDir(RootCmd.PersistentFlags())
-	config.ConfigureShell(RootCmd.PersistentFlags())
-	config.ConfigureFormat(RootCmd.PersistentFlags())
+	ConfigureDebug(RootCmd.PersistentFlags())
+	ConfigureFormat(RootCmd.PersistentFlags())
 }
