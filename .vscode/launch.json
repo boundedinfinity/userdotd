@@ -27,5 +27,18 @@
                 "init",
             ]
         },
+        {
+            "name": "userdotd shell bash init --force",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/main.go",
+            "args": [
+                "shell",
+                "bash",
+                "init",
+                "--force",
+            ]
+        },
     ]
 }

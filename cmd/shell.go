@@ -48,13 +48,18 @@ func createShellStatusCommand(name string) *cobra.Command {
 }
 
 func createShellInitCommand(name string) *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:     "initialize",
 		Aliases: []string{"init"},
 		Short:   fmt.Sprintf("Initialize %v shell", name),
 		Run: func(cmd *cobra.Command, arg []string) {
 			s := system.NewSystem(gContext, gLogger)
-			status, err := s.ShellInitialize(name)
+			// force := GetForce()
+
+			status, err := s.ShellInitialize(model.ShellInitializeRequest{
+				Name:  name,
+				Force: true,
+			})
 
 			if err != nil {
 				handleError(err)
@@ -63,6 +68,10 @@ func createShellInitCommand(name string) *cobra.Command {
 			fmt.Printf("%v: initialized\n", status.Name)
 		},
 	}
+
+	ConfigureForce(cmd.PersistentFlags())
+
+	return cmd
 }
 
 var shellCommand = &cobra.Command{

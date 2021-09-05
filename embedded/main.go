@@ -54,6 +54,12 @@ func ReadFile(name string) ([]byte, error) {
 	return files.ReadFile(name2)
 }
 
+func OpenFile(name string) (fs.File, error) {
+	name2 := stupidGoEmbedAdd(name)
+	name2 = contentRootAdd(name2)
+	return files.Open(name2)
+}
+
 func WalkDir(root string, fn fs.WalkDirFunc) error {
 	root2 := stupidGoEmbedAdd(root)
 	root2 = path.Join(model.Embedded_Root, root2)

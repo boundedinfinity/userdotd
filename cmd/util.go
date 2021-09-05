@@ -9,11 +9,28 @@ import (
 	"github.com/spf13/viper"
 )
 
-const (
+var (
+	forceName        = "force"
+	forceDefault     = false
+	forceDescription = "Force"
+
 	debugName        = "debug"
 	debugDefault     = false
 	debugDescription = "Debugging mode"
+
+	formatName        = "format"
+	formatDefault     = "raw"
+	validformats      = []string{"raw", "json"}
+	formatDescription = fmt.Sprintf("The format type. Can be one of: %v", strings.Join(validformats, ", "))
 )
+
+func GetForce() bool {
+	return viper.GetBool(forceName)
+}
+
+func ConfigureForce(flagset *flag.FlagSet) {
+	boolPFlag(flagset, forceName, forceDefault, forceDescription)
+}
 
 func GetDebug() bool {
 	return viper.GetBool(debugName)
@@ -22,16 +39,6 @@ func GetDebug() bool {
 func ConfigureDebug(flagset *flag.FlagSet) {
 	boolPFlag(flagset, debugName, debugDefault, debugDescription)
 }
-
-const (
-	formatName = "format"
-)
-
-var (
-	formatDefault     = "raw"
-	validformats      = []string{"raw", "json"}
-	formatDescription = fmt.Sprintf("The format type. Can be one of: %v", strings.Join(validformats, ", "))
-)
 
 func GetFormat() string {
 	return viper.GetString(formatName)

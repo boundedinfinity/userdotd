@@ -17,7 +17,12 @@ type ShellStatus struct {
 	State ShellState `json:"state"`
 }
 
-type ShellInitialize struct {
+type ShellInitializeRequest struct {
+	Name  string `json:"name"`
+	Force bool   `json:"force"`
+}
+
+type ShellInitializeResponse struct {
 	Name  string      `json:"name"`
 	Files []ShellFile `json:"files"`
 }
