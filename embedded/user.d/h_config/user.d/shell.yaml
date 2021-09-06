@@ -1,0 +1,11 @@
+shell:
+    bash:
+        files:
+            -   source: embedded://bash/.bash_profile
+            -   source: embedded://bash/.bashrc
+            -   source: embedded://bash/.config/bash/config.bash
+            -   source: embedded://bash/.config/bash/non-interactive/available/go.bash
+            
+    fish:
+        files:
+            -   source: embedded://fish/.config/fish/config.fish

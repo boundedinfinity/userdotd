@@ -11,6 +11,21 @@ import (
 	"github.com/boundedinfinity/userdotd/pathutil"
 )
 
+func (t *System) ShellEmbeddedList(request model.ShellEmbeddedListRequest) (model.ShellEmbeddedListResponse, error) {
+	response := model.ShellEmbeddedListResponse{}
+
+	embedded.WalkDirRaw(".", func(p string, d fs.DirEntry, err error) error {
+		if p == "." || p == model.StupidGoEmbed_KeepFile {
+			return nil
+		}
+
+		response.Files = append(response.Files, p)
+		return nil
+	})
+
+	return response, nil
+}
+
 func (t *System) ShellInitialize(request model.ShellInitializeRequest) (model.ShellInitializeResponse, error) {
 	response := model.ShellInitializeResponse{
 		Name:  request.Name,

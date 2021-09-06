@@ -9,7 +9,10 @@ import (
 	"github.com/boundedinfinity/userdotd/model"
 )
 
-//go:embed content/*
+//go:embed bash/*
+//go:embed fish/*
+//go:embed zsh/*
+//go:embed user.d/*
 var files embed.FS
 
 func contentRootTrim(n string) string {
@@ -28,6 +31,12 @@ func TrimPathPrefix(p string, elem ...string) string {
 	p2 = strings.TrimPrefix(p2, elems)
 	p2 = strings.TrimPrefix(p2, "/")
 	return p2
+}
+
+func ListFiles() ([]string, error) {
+	response := make([]string, 0)
+
+	return response, nil
 }
 
 func ReadDir(name string) ([]fs.DirEntry, error) {
@@ -58,6 +67,10 @@ func OpenFile(name string) (fs.File, error) {
 	name2 := stupidGoEmbedAdd(name)
 	name2 = contentRootAdd(name2)
 	return files.Open(name2)
+}
+
+func WalkDirRaw(root string, fn fs.WalkDirFunc) error {
+	return fs.WalkDir(files, root, fn)
 }
 
 func WalkDir(root string, fn fs.WalkDirFunc) error {

@@ -17,6 +17,13 @@ type ShellStatus struct {
 	State ShellState `json:"state"`
 }
 
+type ShellEmbeddedListRequest struct {
+}
+
+type ShellEmbeddedListResponse struct {
+	Files []string `json:"files"`
+}
+
 type ShellInitializeRequest struct {
 	Name  string `json:"name"`
 	Force bool   `json:"force"`
