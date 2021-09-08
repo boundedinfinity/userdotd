@@ -3,28 +3,10 @@ package system
 import (
 	"errors"
 	"io/fs"
-	"os"
-	"path"
 
-	"github.com/boundedinfinity/userdotd/embedded"
 	"github.com/boundedinfinity/userdotd/model"
 	"github.com/boundedinfinity/userdotd/pathutil"
 )
-
-func (t *System) ShellEmbeddedList(request model.ShellEmbeddedListRequest) (model.ShellEmbeddedListResponse, error) {
-	response := model.ShellEmbeddedListResponse{}
-
-	embedded.WalkDirRaw(".", func(p string, d fs.DirEntry, err error) error {
-		if p == "." || p == model.StupidGoEmbed_KeepFile {
-			return nil
-		}
-
-		response.Files = append(response.Files, p)
-		return nil
-	})
-
-	return response, nil
-}
 
 func (t *System) ShellInitialize(request model.ShellInitializeRequest) (model.ShellInitializeResponse, error) {
 	response := model.ShellInitializeResponse{
@@ -32,61 +14,61 @@ func (t *System) ShellInitialize(request model.ShellInitializeRequest) (model.Sh
 		Files: make([]model.ShellFile, 0),
 	}
 
-	home, err := os.UserHomeDir()
+	// home, err := os.UserHomeDir()
 
-	if err != nil {
-		return response, err
-	}
+	// if err != nil {
+	// 	return response, err
+	// }
 
-	err = embedded.WalkShell(request.Name, func(ep string, d fs.DirEntry, err error) error {
-		if d.Name() == model.StupidGoEmbed_KeepFile {
-			return nil
-		}
+	// err = embedded.WalkShell(request.Name, func(ep string, d fs.DirEntry, err error) error {
+	// 	if d.Name() == model.StupidGoEmbed_KeepFile {
+	// 		return nil
+	// 	}
 
-		rp := ep
-		rp = embedded.TrimPathPrefix(rp, "shell", request.Name)
-		rp = path.Join(home, rp)
+	// 	rp := ep
+	// 	rp = embedded.TrimPathPrefix(rp, "shell", request.Name)
+	// 	rp = path.Join(home, rp)
 
-		if d.IsDir() {
-			if err := pathutil.EnsureDir(rp); err != nil {
-				return err
-			}
-		} else {
-			if pathutil.Exists(rp) {
-				eq, err := pathutil.EmbeddedEqual(ep, rp)
+	// 	if d.IsDir() {
+	// 		if err := pathutil.EnsureDir(rp); err != nil {
+	// 			return err
+	// 		}
+	// 	} else {
+	// 		if pathutil.Exists(rp) {
+	// 			eq, err := pathutil.EmbeddedEqual(ep, rp)
 
-				if err != nil {
-					return err
-				}
+	// 			if err != nil {
+	// 				return err
+	// 			}
 
-				if eq {
-					return nil
-				} else {
-					if request.Force {
-						if err := pathutil.BackupFile(rp); err != nil {
-							return err
-						}
+	// 			if eq {
+	// 				return nil
+	// 			} else {
+	// 				if request.Force {
+	// 					if err := pathutil.BackupFile(rp); err != nil {
+	// 						return err
+	// 					}
 
-						if err := pathutil.EmbeddedCopy(ep, rp); err != nil {
-							return err
-						}
-					} else {
-						return model.ErrFileNotEqualNew(rp)
-					}
-				}
-			} else {
-				if err := pathutil.EmbeddedCopy(ep, rp); err != nil {
-					return err
-				}
-			}
-		}
+	// 					if err := pathutil.EmbeddedCopy(ep, rp); err != nil {
+	// 						return err
+	// 					}
+	// 				} else {
+	// 					return model.ErrFileNotEqualNew(rp)
+	// 				}
+	// 			}
+	// 		} else {
+	// 			if err := pathutil.EmbeddedCopy(ep, rp); err != nil {
+	// 				return err
+	// 			}
+	// 		}
+	// 	}
 
-		return nil
-	})
+	// 	return nil
+	// })
 
-	if err != nil && !errors.Is(err, model.ErrEndWalk) {
-		return response, err
-	}
+	// if err != nil && !errors.Is(err, model.ErrEndWalk) {
+	// 	return response, err
+	// }
 
 	return response, nil
 }
@@ -113,24 +95,28 @@ func (t *System) ShellStatus(name string) (model.ShellStatus, error) {
 		State: model.ShellState_Unknown,
 	}
 
-	home, err := os.UserHomeDir()
+	fn := func(p string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
 
-	if err != nil {
-		return status, err
-	}
+		fp := pathutil.TrimFirstComp(p)
+		fp = pathutil.GetFilePath(fp)
+		exist, err := pathutil.Exists(fp)
 
-	err = embedded.WalkShell(name, func(p string, d fs.DirEntry, err error) error {
-		p2 := p
-		p2 = embedded.TrimPathPrefix(p2, "shell", name)
-		p2 = path.Join(home, p2)
+		if err != nil {
+			return err
+		}
 
-		if !pathutil.Exists(p2) {
+		if !exist {
 			status.State = model.ShellState_Uninitialized
 			return model.ErrEndWalk
 		}
 
 		return nil
-	})
+	}
+
+	err := pathutil.WalkDir("embedded://.", fn, nil, nil)
 
 	if err != nil && !errors.Is(err, model.ErrEndWalk) {
 		return status, err

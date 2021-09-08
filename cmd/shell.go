@@ -21,9 +21,6 @@ func init() {
 
 	shellCommand.AddCommand(shellStatusCommand)
 
-	shellCommand.AddCommand(shellEmbeddedCommand)
-	shellEmbeddedCommand.AddCommand(shellEmbeddedListCommand)
-
 	RootCmd.AddCommand(shellCommand)
 }
 
@@ -96,28 +93,6 @@ var shellStatusCommand = &cobra.Command{
 
 		for _, status := range statuses {
 			fmt.Printf("%4v: %v\n", status.Name, status.State)
-		}
-	},
-}
-
-var shellEmbeddedCommand = &cobra.Command{
-	Use:   "embedded",
-	Short: "embedded utility",
-}
-
-var shellEmbeddedListCommand = &cobra.Command{
-	Use:   "list",
-	Short: "list embedded files",
-	Run: func(cmd *cobra.Command, arg []string) {
-		s := system.NewSystem(gContext, gLogger)
-		response, err := s.ShellEmbeddedList(model.ShellEmbeddedListRequest{})
-
-		if err != nil {
-			handleError(err)
-		}
-
-		for _, file := range response.Files {
-			fmt.Printf("%v\n", file)
 		}
 	},
 }

@@ -2,65 +2,84 @@ package pathutil
 
 import (
 	"fmt"
-	"io"
+	"io/fs"
 	"os"
-	"time"
+	"path/filepath"
+	"strings"
 
-	"github.com/boundedinfinity/userdotd/model"
+	"github.com/boundedinfinity/userdotd/embedded"
 )
 
-func Exists(p string) bool {
-	_, err := os.Stat(p)
-	return !os.IsNotExist(err)
+func TrimFirstComp(s string) string {
+	ss := strings.Split(s, string(filepath.Separator))
+	ss = ss[1:]
+	s = filepath.Join(ss...)
+	return s
 }
 
-func EnsureDir(p string) error {
-	fi, err := os.Stat(p)
-
-	if err != nil && !os.IsNotExist(err) {
-		return err
+func GetFilePath(s string) string {
+	if s == "" {
+		s = "."
 	}
 
-	if os.IsNotExist(err) {
-		if err := os.MkdirAll(p, 0755); err != nil {
-			return err
+	return fmt.Sprintf("file://%v", s)
+}
+
+func GetEmbeddedPath(s string) string {
+	if s == "" {
+		s = "."
+	}
+
+	return fmt.Sprintf("file://%v", s)
+}
+
+func IsFilePath(s string) bool {
+	return strings.HasPrefix(s, "file://")
+}
+
+func IsEmbeddedPath(s string) bool {
+	return strings.HasPrefix(s, "embedded://")
+}
+
+func trimPrefix(s string) string {
+	o := s
+	o = strings.TrimPrefix(o, "file://")
+	o = strings.TrimPrefix(o, "embedded://")
+
+	return o
+}
+
+func getFs(path string) (string, fs.FS, error) {
+	if IsFilePath(path) {
+		root, err := os.UserHomeDir()
+
+		if err != nil {
+			return "", nil, err
+
 		}
+
+		return trimPrefix(path), os.DirFS(root), nil
+	} else if IsEmbeddedPath(path) {
+		fsys, err := fs.Sub(embedded.EmbeddedFiles, ".")
+
+		return trimPrefix(path), fsys, err
 	} else {
-		if !fi.IsDir() {
-			return model.ErrExistButNotDirNew(p)
-		}
+		return "", nil, fmt.Errorf("invalid path: %v", path)
 	}
-
-	return nil
 }
 
-func BackupFile(p string) error {
-	cf, err := os.Open(p)
+func open(name string) (fs.File, error) {
+	path, fsys, err := getFs(name)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	defer cf.Close()
-
-	now := time.Now()
-	bp := p
-	bp = fmt.Sprintf("%v.%v", bp, model.BackupFile_Prefix)
-	bp = fmt.Sprintf("%v-%v", bp, now.Format(time.RFC3339))
-
-	bf, err := os.Create(bp)
+	file, err := fsys.Open(path)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	defer bf.Close()
-
-	_, err = io.Copy(bf, cf)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return file, nil
 }

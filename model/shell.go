@@ -17,11 +17,11 @@ type ShellStatus struct {
 	State ShellState `json:"state"`
 }
 
-type ShellEmbeddedListRequest struct {
+type EmbeddedListRequest struct {
 }
 
-type ShellEmbeddedListResponse struct {
-	Files []string `json:"files"`
+type EmbeddedListResponse struct {
+	Paths []string `json:"paths"`
 }
 
 type ShellInitializeRequest struct {
